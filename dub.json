@@ -1,0 +1,11 @@
+{
+    "name": "physxwrap",
+    "description": "simple wrapper for physx",
+    "targetType": "sourceLibrary",
+    "importPaths": ["import"],
+    "sourcePaths": ["import"],
+    "preBuildCommands": [ "./build_libs.sh" ],
+    "dependencies": {
+        "descore": ">=1.0.14"
+    }
+}
