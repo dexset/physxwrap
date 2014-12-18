@@ -41,6 +41,7 @@ private
         PxGeometry getPlaneGeometry();
         PxGeometry getBoxGeometry( PxVec3 );
         PxGeometry getCapsuleGeometry( float, float );
+        PxGeometry getSphereGeometry( float );
 
         void getSimplePose( PxActor, float* );
         void actorWakeUp( PxActor );
@@ -142,20 +143,32 @@ public:
 
     static PhysGeometry capsuleGeometry( float half_height, float radius )
     { return new PhysGeometry( getCapsuleGeometry( half_height, radius ) ); }
+
+    static PhysGeometry sphereGeometry( float radius )
+    { return new PhysGeometry( getSphereGeometry( radius ) ); }
 }
 
 class PhysActor : PhysBaseObject, SpaceNode
 {
     mixin SpaceNodeHelper!(true);
 private:
-    this( PxActor actor ){ ptr = actor; }
+    this( PxActor actor, bool is_static )
+    { 
+        ptr = actor; 
+        this.is_static = is_static;
+    }
 
+    bool is_static;
 public:
     void update()
     { getSimplePose( ptr, cast( float* )self_mtr.data.ptr ); }
 
     void wakeUp()
-    { actorWakeUp( ptr ); }
+    { 
+        if( is_static )
+            return;
+        actorWakeUp( ptr ); 
+    }
 
     void addForce( vec3 force, PhysForceMode mode, bool autowake )
     { actorAddForce( ptr, force.data.ptr, mode, autowake ); }
@@ -168,6 +181,11 @@ public:
         else
             local_pos_data = null;
         actorSetDensity( ptr, dens, local_pos_data, include_non_sym );
+    }
+    @property
+    {
+        bool isStatic() const { return is_static; }
+        vec3 position() const { return vec3( matrix.col(3)[0 .. 3] ); }
     }
 }
 
@@ -190,10 +208,10 @@ public:
         return vec3( rvec[0], rvec[1], rvec[2] ); 
     }
 
-    PhysActor createSimple( PhysTransform transform, PhysGeometry geometry, PhysMaterial material, bool isStatic = false )
+    PhysActor createSimple( PhysTransform transform, PhysGeometry geometry, PhysMaterial material, bool is_static = false )
     { 
-        auto actor_ptr = addSimpleObject( ptr, physics.ptr, transform.ptr, geometry.ptr, material.ptr, isStatic ); 
-        return new PhysActor( actor_ptr );
+        auto actor_ptr = addSimpleObject( ptr, physics.ptr, transform.ptr, geometry.ptr, material.ptr, is_static ); 
+        return new PhysActor( actor_ptr, is_static );
     }
 
     void removeSimple( PhysActor actor )

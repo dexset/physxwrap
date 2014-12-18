@@ -20,6 +20,7 @@ extern "C"
     PxGeometry* getPlaneGeometry();
     PxGeometry* getBoxGeometry( PxVec3* );
     PxGeometry* getCapsuleGeometry( float, float );
+    PxGeometry* getSphereGeometry( float );
 
     void actorWakeUp( PxActor* );
     void getSimplePose( PxActor*, float* );

@@ -50,7 +50,10 @@ PxGeometry* getBoxGeometry( PxVec3* size )
 { return new PxBoxGeometry( *size ); }
 
 PxGeometry* getCapsuleGeometry( float half_height, float radius )
-{ return new PxCapsuleGeometry( half_height, radius ); }
+{ return new PxCapsuleGeometry( radius, half_height ); }
+
+PxGeometry* getSphereGeometry( float radius )
+{ return new PxSphereGeometry( radius ); }
 
 void getSimplePose( PxActor* actor, float* data ) //TODO rework
 {
