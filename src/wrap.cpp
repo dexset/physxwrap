@@ -1,119 +1,119 @@
 #include "wrap.h"
 
-PxFoundation* foundation;
-PxPhysics* physics;
-PxScene* scene;
-PxMaterial* material;
-PxActor** actors;
-unsigned int num_actors;
+PxErrorCallback* getDefaultErrorCallback()
+{ return new PxDefaultErrorCallback(); }
 
-PxDefaultErrorCallback error_callback;
-PxDefaultAllocator allocator_callback;
+PxAllocatorCallback* getDefaultAllocatorCallback()
+{ return new PxDefaultAllocator(); }
 
-bool initializePhysx()
+PxFoundation* getFoundation( PxAllocatorCallback* allocator, PxErrorCallback* error )
+{ return PxCreateFoundation( PX_PHYSICS_VERSION, *allocator, *error ); }
+
+PxPhysics* getPhysics( PxFoundation* foundation )
+{ return PxCreatePhysics( PX_PHYSICS_VERSION, *foundation, PxTolerancesScale() ); }
+
+bool initExtensions( PxPhysics* physics )
+{ return PxInitExtensions( *physics ); }
+
+void closeExtensions()
+{ PxCloseExtensions(); }
+
+PxScene* getScene( PxPhysics* physics )
 {
-    foundation = PxCreateFoundation( PX_PHYSICS_VERSION, allocator_callback, 
-                                                         error_callback );
-    if( !foundation )
-        return false;
-
-    physics = PxCreatePhysics( PX_PHYSICS_VERSION, *foundation, PxTolerancesScale() );
-    if( !physics )
-        return false;
-
     PxSceneDesc scene_desc( physics->getTolerancesScale() );
-    scene_desc.gravity = PxVec3( 0, 0, -9.8 );
     scene_desc.cpuDispatcher = PxDefaultCpuDispatcherCreate(1);
     scene_desc.filterShader = PxDefaultSimulationFilterShader;
-
-    scene = physics->createScene(scene_desc);
-    if( !scene )
-        return false;
-
-    material = physics->createMaterial( 0.5, 0.5, 0.5 );
-    if( !material )
-        return false;
-
-    return true;
+    return physics->createScene( scene_desc );
 }
 
-void addAndReallocActors()
-{
-    PxActor** tmp_actors;
-    tmp_actors = new PxActor*[num_actors];
-    for( int i = 0; i < num_actors; i++ )
-        tmp_actors[i] = actors[i];
-    actors = new PxActor*[num_actors + 1];
-    for( int i = 0; i < num_actors; i++ )
-        actors[i] = tmp_actors[i];
-    num_actors++;
+void setGravity( PxScene* scene, PxVec3* g )
+{ 
+    scene->setGravity( *g ); 
 }
 
-int addActor( PxTransform t, PxGeometry g, bool isStatic = false )
+PxVec3* getGravity( PxScene* scene )
+{ scene->getGravity(); }
+
+PxMaterial* getMaterial( PxPhysics* physics, 
+                         float static_friction, 
+                         float dynamic_friction, 
+                         float restitution )
+{ return physics->createMaterial( static_friction, dynamic_friction, restitution ); }
+
+PxTransform* getTransform( PxVec3* pos, PxVec3* axis, float angle )
+{ return new PxTransform( *pos, PxQuat( angle, *axis ) ); }
+
+PxGeometry* getPlaneGeometry()
+{ return new PxPlaneGeometry(); }
+
+PxGeometry* getBoxGeometry( PxVec3* size )
+{ return new PxBoxGeometry( *size ); }
+
+PxGeometry* getCapsuleGeometry( float half_height, float radius )
+{ return new PxCapsuleGeometry( half_height, radius ); }
+
+void getSimplePose( PxActor* actor, float* data ) //TODO rework
 {
-    addAndReallocActors(); 
-
-    unsigned int cur_actor = num_actors - 1;
-    if( isStatic )
-        actors[cur_actor] = physics->createRigidStatic( t );
-    else
-        actors[cur_actor] = physics->createRigidDynamic( t );
-
-    ((PxRigidBody*)(actors[cur_actor]))->createShape( g, *material );
-
-    if( !actors[num_actors-1] )
-        return -1;
-
-    scene->addActor( *actors[num_actors-1] );
-    return num_actors - 1;
-}
-
-int addPlane( PxVec3* pos, PxVec3* axis, float angle )
-{
-    PxTransform t = PxTransform( *pos, PxQuat( angle, *axis ) );
-    PxGeometry g = PxPlaneGeometry();
-    return addActor( t, g, true );
-}
-
-int addBox( PxVec3* pos, PxVec3* size )
-{
-    PxTransform t = PxTransform( *pos );
-    PxGeometry g = PxBoxGeometry( *size );
-    return addActor( t, g );
-}
-
-int addCapsule( PxVec3* pos, float hheight, float radius )
-{
-    PxTransform t = PxTransform( *pos );
-    PxGeometry g = PxCapsuleGeometry( radius, hheight );
-    return addActor( t, g );
-}
-
-void getTransform( unsigned int id, float* data )
-{
-    if( id >= num_actors )
-        throw "getTransform";
-
     PxShape* shp[1];
-
-    ((PxRigidDynamic*)(actors[id]))->getShapes( shp, PxU32(1) );
-
-    PxMat44 shape_pose(PxShapeExt::getGlobalPose(*shp[0], *(PxRigidActor*)(actors[id])));
-
+    PxRigidDynamic* rigid = (PxRigidDynamic*)actor;
+    rigid->getShapes( shp, PxU32(1) );
+    PxMat44 shape_pose(PxShapeExt::getGlobalPose(*shp[0], *rigid));
     for( int i = 0; i < 4; i++ )
         for( int j = 0; j < 4; j++ )
             data[i*4 + j] = shape_pose[j][i];
 }
 
-void physxStep( float dt )
+void actorWakeUp( PxActor* actor )
+{
+    PxRigidDynamic* rigid = (PxRigidDynamic*)actor;
+    rigid->wakeUp();
+}
+
+void actorAddForce( PxActor* actor, PxVec3* force, PxForceMode::Enum mode, bool autowake )
+{
+    PxRigidDynamic* rigid = (PxRigidDynamic*)actor;
+    rigid->addForce( *force, mode, autowake );
+}
+
+void actorSetDensity( PxActor* actor, float density, PxVec3* local_pos, bool include_non_sym )
+{
+    PxRigidDynamic* rigid = (PxRigidDynamic*)actor;
+    PxRigidBodyExt::updateMassAndInertia( *rigid, density, local_pos, include_non_sym );
+}
+
+PxActor* addSimpleObject( PxScene* scene, 
+                         PxPhysics* physics, 
+                         PxTransform* transform, 
+                         PxGeometry* geometry,
+                         PxMaterial* material, 
+                         bool isStatic )
+{
+    PxActor* actor;
+    if( isStatic )
+        actor = physics->createRigidStatic( *transform );
+    else
+        actor = physics->createRigidDynamic( *transform );
+
+    ((PxRigidBody*)(actor))->createShape( *geometry, *material );
+
+    scene->addActor( *actor );
+    return actor;
+}
+
+void removeSimpleObject( PxScene* scene, PxActor* actor )
+{ scene->removeActor( *actor ); }
+
+void simulate( PxScene* scene, float dt )
 {
     scene->simulate( dt );
     scene->fetchResults( true );
 }
 
-void deinitPhysx()
-{
-    scene->release();
-    physics->release();
-    foundation->release();
-}
+void releaseFoundation( PxFoundation* foundation )
+{ foundation->release(); }
+
+void releasePhysics( PxPhysics* physics )
+{ physics->release(); }
+
+void releaseScene( PxScene* scene )
+{ scene->release(); }

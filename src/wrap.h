@@ -6,17 +6,35 @@ using namespace physx;
 
 extern "C"
 {
-    bool initializePhysx();
-    void deinitPhysx();
+    PxErrorCallback* getDefaultErrorCallback();
+    PxAllocatorCallback* getDefaultAllocatorCallback();
 
-    int addPlane( PxVec3* pos, PxVec3* axis, float angle );
+    PxFoundation* getFoundation( PxAllocatorCallback*, PxErrorCallback* );
+    PxPhysics* getPhysics( PxFoundation* );
+    bool initExtensions( PxPhysics* );
+    void closeExtensions();
+    PxScene* getScene( PxPhysics* );
+    PxMaterial* getMaterial( PxPhysics*, float, float, float );
+    PxTransform* getTransform( PxVec3*, PxVec3*, float );
 
-    int addBox( PxVec3* pos, PxVec3* size );
+    PxGeometry* getPlaneGeometry();
+    PxGeometry* getBoxGeometry( PxVec3* );
+    PxGeometry* getCapsuleGeometry( float, float );
 
-    int addCapsule( PxVec3* pos, PxVec3* size );
+    void actorWakeUp( PxActor* );
+    void getSimplePose( PxActor*, float* );
+    void actorAddForce( PxActor*, PxVec3*, PxForceMode::Enum, bool );
+    void actorSetDensity( PxActor*, float, PxVec3*, bool );
 
-    void physxStep( float dt );
+    void setGravity( PxScene*, PxVec3* );
+    PxVec3* getGravity( PxScene* );
+    PxActor* addSimpleObject( PxScene*, PxPhysics*, PxTransform*, PxGeometry*, PxMaterial*, bool );
+    void removeSimpleObject( PxScene*, PxActor* );
 
-    void getTransform( unsigned int id, float* data );
+    void simulate( PxScene*, float dt );
+
+    void releaseFoundation( PxFoundation* );
+    void releasePhysics( PxPhysics* );
+    void releaseScene( PxScene* );
 }
 #endif
