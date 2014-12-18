@@ -1,7 +1,7 @@
 module physxwrap;
 import des.math.linear;
 import des.view;
-import des.util.emm;
+import des.util.arch.emm;
 
 class PhysXException : Exception
 {
@@ -191,7 +191,7 @@ public:
 
 class PhysScene : PhysBaseObject, ExternalMemoryManager
 {
-    mixin DirectEMM;
+    mixin EMM;
 
 protected:
     void selfDestroy()

@@ -1,0 +1,64 @@
+{
+    "name": "test",
+    "targetPath": "bin",
+    "targetType": "executable",
+
+    "importPaths": [ "../import", "des/import", "../descore/import" ],
+    "sourcePaths": [ "src", "des/import", "../descore/import", "../import" ],
+
+    "lflags": [ "-L../libs", "-L/home/akzwar/libs" ],
+
+    "stringImportPaths": [ "data" ],
+
+    "libs":
+    [
+        "stdc++",
+        "dphysx",
+        "GL",
+        "CgGL",
+        "Cg",
+        "PhysX3CharacterKinematicCHECKED_x64",
+        "PhysX3CharacterKinematicDEBUG_x64",
+        "PhysX3CharacterKinematicPROFILE_x64",
+        "PhysX3CharacterKinematic_x64",
+        "PhysX3CHECKED_x64",
+        "PhysX3CommonCHECKED_x64",
+        "PhysX3CommonDEBUG_x64",
+        "PhysX3CommonPROFILE_x64",
+        "PhysX3Common_x64",
+        "PhysX3CookingCHECKED_x64",
+        "PhysX3CookingDEBUG_x64",
+        "PhysX3CookingPROFILE_x64",
+        "PhysX3Cooking_x64",
+        "PhysX3DEBUG_x64",
+        "PhysX3Extensions",
+        "PhysX3ExtensionsCHECKED",
+        "PhysX3ExtensionsDEBUG",
+        "PhysX3ExtensionsPROFILE",
+        "PhysX3PROFILE_x64",
+        "PhysX3Vehicle",
+        "PhysX3VehicleCHECKED",
+        "PhysX3VehicleDEBUG",
+        "PhysX3VehiclePROFILE",
+        "PhysX3_x64",
+        "PhysXProfileSDK",
+        "PhysXProfileSDKCHECKED",
+        "PhysXProfileSDKDEBUG",
+        "PhysXProfileSDKPROFILE",
+        "PhysXVisualDebuggerSDK",
+        "PhysXVisualDebuggerSDKCHECKED",
+        "PhysXVisualDebuggerSDKDEBUG",
+        "PhysXVisualDebuggerSDKPROFILE",
+        "PxTask",
+        "PxTaskCHECKED",
+        "PxTaskDEBUG",
+        "PxTaskPROFILE"
+    ],
+
+    "dependencies":
+    {
+        "derelict-gl3": ">=1.0.10",
+        "derelict-sdl2": ">=1.2.8",
+        "derelict-ft": ">=1.0.0",
+    }
+}
