@@ -35,7 +35,7 @@ private:
 
         auto actor = scene.createSimple( transform, geometry, material );
 
-        objects ~= new Box( size, actor );
+        objects ~= newEMM!Box( size, actor );
         import std.random;
         objects[$ - 1].actor.setDensity( uniform( 1.0, 10.0 ) );
         return objects[$ - 1];
@@ -48,7 +48,7 @@ private:
 
         auto actor = scene.createSimple( transform, geometry, material );
 
-        objects ~= new Sphere( radius, 50, actor );
+        objects ~= newEMM!Sphere( radius, 50, actor );
         import std.random;
         objects[$ - 1].actor.setDensity( uniform( 1.0, 10.0 ) );
         return objects[$ - 1];
@@ -61,7 +61,7 @@ private:
 
         auto actor = scene.createSimple( transform, geometry, material, true );
 
-        objects ~= new Plane( 5000.0, actor );
+        objects ~= newEMM!Plane( 5000.0, actor );
 
         return objects[$-1];
     }
@@ -74,7 +74,7 @@ private:
 
         auto actor = scene.createSimple( transform, geometry, material );
 
-        objects ~= new Capsule( height, radius, 50, actor );
+        objects ~= newEMM!Capsule( height, radius, 50, actor );
         import std.random;
         objects[$ - 1].actor.setDensity( uniform( 1.0, 10.0 ) );
         return objects[$ - 1];
@@ -105,7 +105,7 @@ protected:
         import std.math;
         addPlane( vec3( 0, 0, 0 ), 3*PI/2.0 );
 
-        //makeScales();
+        makeScales();
 
         connect( key, ( in KeyboardEvent ev )
         {  
