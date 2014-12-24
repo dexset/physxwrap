@@ -10,11 +10,18 @@ extern "C"
     PxAllocatorCallback* getDefaultAllocatorCallback();
 
     PxFoundation* getFoundation( PxAllocatorCallback*, PxErrorCallback* );
+
     PxPhysics* getPhysics( PxFoundation* );
+
     bool initExtensions( PxPhysics* );
     void closeExtensions();
+
+    PxCooking* getDefaultCooking( PxFoundation* foundation );
+
     PxScene* getScene( PxPhysics* );
+
     PxMaterial* getMaterial( PxPhysics*, float, float, float );
+
     PxTransform* getTransform( PxVec3*, PxVec3*, float );
 
     PxGeometry* getPlaneGeometry();
@@ -36,6 +43,7 @@ extern "C"
 
     void releaseFoundation( PxFoundation* );
     void releasePhysics( PxPhysics* );
+    void releaseCooking( PxCooking* );
     void releaseScene( PxScene* );
 }
 #endif

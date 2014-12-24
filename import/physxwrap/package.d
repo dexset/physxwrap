@@ -13,6 +13,7 @@ private
 {
     alias void* PxFoundation;
     alias void* PxPhysics;
+    alias void* PxCooking;
     alias void* PxScene;
     alias void* PxMaterial;
     alias void* PxTransform;
@@ -31,8 +32,11 @@ private
         PxFoundation getFoundation( PxAllocatorCallback, PxErrorCallback );
 
         PxPhysics getPhysics( PxFoundation );
+
         bool initExtensions( PxPhysics );
         void closeExtensions();
+
+        PxCooking getDefaultCooking( PxFoundation );
 
         PxMaterial getMaterial( PxPhysics, float, float, float );
 
@@ -58,6 +62,7 @@ private
 
         void releaseFoundation( PxFoundation );
         void releasePhysics( PxPhysics );
+        void releaseCooking( PxCooking );
         void releaseScene( PxScene );
     }
 
@@ -65,6 +70,7 @@ private
     static PxAllocatorCallback allocator_callback = null;
     static PhysFoundation foundation = null;
     static PhysPhysics physics = null;
+    static PhysCooking cooking = null;
 }
 
 enum PhysForceMode 
@@ -82,6 +88,7 @@ static this()
 
     foundation = new PhysFoundation( allocator_callback, error_callback );
     physics = new PhysPhysics( foundation );
+    cooking = new PhysCooking( foundation );
     if( !initExtensions( physics.ptr ) )
         throw new PhysXException( "Error initializing extensions." );
 }
@@ -89,6 +96,7 @@ static this()
 static ~this()
 {
     closeExtensions();
+    releaseCooking( cooking.ptr );
     releasePhysics( physics.ptr );
     releaseFoundation( foundation.ptr );
 }
@@ -113,6 +121,13 @@ class PhysPhysics : PhysBaseObject
 private:
     this( PhysFoundation foundation )
     { ptr = getPhysics( foundation.ptr ); }
+}
+
+class PhysCooking : PhysBaseObject
+{
+private:
+    this( PhysFoundation foundation )
+    { ptr = getDefaultCooking( foundation.ptr ); }
 }
 
 class PhysMaterial : PhysBaseObject
@@ -213,6 +228,8 @@ public:
         auto actor_ptr = addSimpleObject( ptr, physics.ptr, transform.ptr, geometry.ptr, material.ptr, is_static ); 
         return new PhysActor( actor_ptr, is_static );
     }
+
+
 
     void removeSimple( PhysActor actor )
     { removeSimpleObject( ptr, actor.ptr ); }

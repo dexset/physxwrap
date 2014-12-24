@@ -4,7 +4,7 @@ import des.math.linear;
 
 import des.util.logsys.base;
 
-import draw.camera;
+import draw.scene;
 import draw.object.base;
 
 import physxwrap;
@@ -16,12 +16,15 @@ import std.math;
 class Sphere : SceneObject
 {
 private:
+    GLBuffer norm;
     auto restart_index = uint.max;
-public:
-    this( float radius, uint segs, PhysActor actor )
-    {
-        super( actor );
 
+    void prepareVertsAndNorms( float radius, uint segs )
+    {
+        norm = createArrayBuffer();
+        setAttribPointer( norm, shader.getAttribLocation( "norm" ), 3, GLType.FLOAT );
+
+        vec3[] norm_data;
         vec3[] vert_data;
 
         auto hsegs = segs / 2;
@@ -35,10 +38,19 @@ public:
                 auto x = radius * sin( theta ) * cos( phi );
                 auto y = radius * sin( theta ) * sin( phi );
                 auto z = radius * cos( theta );
+                norm_data ~= vec3( x, y, z );
                 vert_data ~= vec3( x, y, z );
             }
+        norm.setData( norm_data );
+        vert.setData( vert_data );
+    }
 
+    void prepareIndices( uint segs )
+    {
         uint[] index_data;
+
+
+        auto hsegs = segs / 2;
 
         auto rsegs = segs + 1;
         foreach( y; 0 .. hsegs )
@@ -51,18 +63,19 @@ public:
             }
             index_data ~= restart_index;
         }
-
-        vert.setData( vert_data );
         index.setData( index_data );
+    }
+public:
+    this( float radius, uint segs, PhysActor actor )
+    {
+        super( actor, "smooth.glsl" );
+
+        prepareVertsAndNorms( radius, segs );
+        prepareIndices( segs );
 
         color = randomColor();
     }
 
-    override void draw( MCamera cam )
-    {
-        glEnable( GL_PRIMITIVE_RESTART );
-        glPrimitiveRestartIndex( restart_index );
-        super.draw( cam );
-        glDisable( GL_PRIMITIVE_RESTART );
-    }
+    override void draw( Scene scene )
+    { baseDrawWithPrimitiveRestart( scene, restart_index ); }
 }

@@ -8,6 +8,8 @@ import draw.object.base;
 
 import physxwrap;
 
+import draw.scene;
+
 class Box : SceneObject
 {
 public:
@@ -30,4 +32,7 @@ public:
         auto b = uniform( 0, 1.0 );
         color = col4( r, g, b, 1 );
     }
+
+    override void draw( Scene scene )
+    { baseDraw( scene ); }
 }

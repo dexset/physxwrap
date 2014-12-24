@@ -9,7 +9,7 @@ import des.util.logsys;
 import des.util.timer;
 
 import draw.object;
-import draw.camera;
+import draw.scene;
 
 import physxwrap;
 
@@ -20,20 +20,22 @@ private:
 
     Plane plane;
 
-    MCamera cam;
+    Scene scene;
 
-    PhysScene scene;
+    PhysScene phys_scene;
 
     PhysMaterial material;
 
     Timer timer;
+
+    auto polygon_mode = GL_FILL;
 
     SceneObject addBox( vec3 pos, vec3 size )
     {
         auto transform = new PhysTransform( pos );
         auto geometry = PhysGeometry.boxGeometry( size );
 
-        auto actor = scene.createSimple( transform, geometry, material );
+        auto actor = phys_scene.createSimple( transform, geometry, material );
 
         objects ~= newEMM!Box( size, actor );
         import std.random;
@@ -46,7 +48,7 @@ private:
         auto transform = new PhysTransform( pos );
         auto geometry = PhysGeometry.sphereGeometry( radius );
 
-        auto actor = scene.createSimple( transform, geometry, material );
+        auto actor = phys_scene.createSimple( transform, geometry, material );
 
         objects ~= newEMM!Sphere( radius, 50, actor );
         import std.random;
@@ -59,7 +61,7 @@ private:
         auto transform = new PhysTransform( pos, vec3( 0, 1, 0 ), angle );
         auto geometry = PhysGeometry.planeGeometry();
 
-        auto actor = scene.createSimple( transform, geometry, material, true );
+        auto actor = phys_scene.createSimple( transform, geometry, material, true );
 
         objects ~= newEMM!Plane( 5000.0, actor );
 
@@ -72,7 +74,7 @@ private:
         auto transform = new PhysTransform( pos, vec3( 0, 1, 0 ), PI / 2.0 );
         auto geometry = PhysGeometry.capsuleGeometry( height / 2.0, radius );
 
-        auto actor = scene.createSimple( transform, geometry, material );
+        auto actor = phys_scene.createSimple( transform, geometry, material );
 
         objects ~= newEMM!Capsule( height, radius, 50, actor );
         import std.random;
@@ -91,21 +93,30 @@ private:
         first.actor.setDensity( 200.0 );
         second.actor.setDensity( 2.0 );
     }
+
+    void switchPolygonMode()
+    {
+        if( polygon_mode == GL_LINE )
+            glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+        else
+            glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    }
 protected:
     override void prepare()
     {
+        glPolygonMode( GL_FRONT_AND_BACK, polygon_mode );
         timer = new Timer;
         material = new PhysMaterial( 0.5, 0.5, 0.5 );
 
-        scene = newEMM!PhysScene;
-        scene.gravity = vec3( 0, 0, -9.8 );
+        phys_scene = newEMM!PhysScene;
+        phys_scene.gravity = vec3( 0, 0, -9.8 );
 
-        cam = new MCamera;
+        scene = new Scene( vec3( 10, 10, 10 ) );
 
         import std.math;
         addPlane( vec3( 0, 0, 0 ), 3*PI/2.0 );
 
-        makeScales();
+        //makeScales();
 
         connect( key, ( in KeyboardEvent ev )
         {  
@@ -127,7 +138,7 @@ protected:
                         addCapsule( vec3( x, y, z ), 2, 0.5 );
                         break;
                     case ev.Scan.G:
-                        scene.gravity = -scene.gravity;
+                        phys_scene.gravity = -phys_scene.gravity;
                         foreach( ref d; objects )
                             d.actor.wakeUp();
                         break;
@@ -137,29 +148,32 @@ protected:
                                                 PhysForceMode.IMPULSE,
                                                 false );
                         break;
+                    case ev.Scan.W:
+                        switchPolygonMode();
+                        break;
                     default: 
                         break;
                 }
             }
 
-            cam.keyControl( ev );
+            scene.cam.keyControl( ev );
         });
 
         connect( mouse, (in MouseEvent ev)
         {  
-            cam.mouseControl( ev );
+           scene.cam.mouseControl( ev );
         });
 
         connect( draw, 
         { 
             glEnable( GL_DEPTH_TEST );
             foreach( ref d; objects )
-                d.draw(cam); 
+                d.draw(scene); 
         });
 
         connect( idle, 
         { 
-            scene.process( timer.cycle() );
+            phys_scene.process( timer.cycle() );
         });
     }
 public:

@@ -41,6 +41,13 @@ public:
             updatePos();
         }
         vec3 target() const { return look_tr.target; }
+
+        void pos( in vec3 p )
+        {
+            look_tr.pos = p;
+            updatePos();
+        }
+        vec3 pos() const { return look_tr.pos; }
     }
 
     void addRotate( in vec2 angle )

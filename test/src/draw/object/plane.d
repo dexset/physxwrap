@@ -4,7 +4,7 @@ import des.math.linear;
 
 import des.util.logsys.base;
 
-import draw.camera;
+import draw.scene;
 import draw.object.base;
 
 import physxwrap;
@@ -28,4 +28,7 @@ public:
         auto b = uniform( 0, 1.0 );
         color = col4( r, g, b, 1 );
     }
+
+    override void draw( Scene scene )
+    { baseDraw( scene ); }
 }

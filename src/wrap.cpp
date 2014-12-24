@@ -18,6 +18,9 @@ bool initExtensions( PxPhysics* physics )
 void closeExtensions()
 { PxCloseExtensions(); }
 
+PxCooking* getDefaultCooking( PxFoundation* foundation )
+{ PxCreateCooking(PX_PHYSICS_VERSION, *foundation, PxCookingParams( PxTolerancesScale() )); }
+
 PxScene* getScene( PxPhysics* physics )
 {
     PxSceneDesc scene_desc( physics->getTolerancesScale() );
@@ -60,7 +63,7 @@ void getSimplePose( PxActor* actor, float* data ) //TODO rework
     PxShape* shp[1];
     PxRigidDynamic* rigid = (PxRigidDynamic*)actor;
     rigid->getShapes( shp, PxU32(1) );
-    PxMat44 shape_pose(PxShapeExt::getGlobalPose(*shp[0], *rigid));
+    PxMat44 shape_pose = rigid->getGlobalPose(); //(PxShapeExt::getGlobalPose(*shp[0], *rigid));
     for( int i = 0; i < 4; i++ )
         for( int j = 0; j < 4; j++ )
             data[i*4 + j] = shape_pose[j][i];
@@ -117,6 +120,9 @@ void releaseFoundation( PxFoundation* foundation )
 
 void releasePhysics( PxPhysics* physics )
 { physics->release(); }
+
+void releaseCooking( PxCooking* cooking )
+{ cooking->release(); }
 
 void releaseScene( PxScene* scene )
 { scene->release(); }
