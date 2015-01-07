@@ -68,6 +68,54 @@ private:
         return objects[$-1];
     }
 
+    struct CollisionModelData
+    {
+        vec3[] verts;
+        uint[] indices;//TODO check if input is int
+    }
+
+    auto loadCollisionModel( string fname )
+    {
+        import std.stdio;
+        auto f = File( fname, "rb" );
+
+        int[1] vcount;
+        int[1] icount;
+        f.rawRead( vcount );
+        f.rawRead( icount );
+
+        CollisionModelData data;
+        data.verts.length = vcount[0];
+        data.indices.length = icount[0];
+
+        float[] tvdata;
+        tvdata.length = vcount[0] * 3;
+
+        f.rawRead( tvdata );
+
+        for( int i = 0; i < vcount[0] * 3; i+= 3 )
+            data.verts ~= vec3( tvdata[i .. i + 3] );
+
+        f.rawRead( data.indices );
+
+        return data;
+    }
+
+    SceneObject addDefaultModel( vec3 pos )
+    {
+        auto transform = new PhysTransform( pos );
+
+        import des.util.helpers;
+        auto model = loadCollisionModel( appPath( "..", "data", "models", "model.des_collision" ) );
+        auto geometry = PhysGeometry.convexMeshGeometry( model.verts );
+
+        auto actor = phys_scene.createSimple( transform, geometry, material );
+
+        objects ~= newEMM!Mesh( "model.des", actor );
+
+        return objects[$-1];
+    }
+
     SceneObject addCapsule( vec3 pos, float height, float radius )
     {
         import std.math;
@@ -97,13 +145,16 @@ private:
     void switchPolygonMode()
     {
         if( polygon_mode == GL_LINE )
-            glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+            glPolygonMode( GL_FRONT_AND_BACK, polygon_mode = GL_FILL );
+        else if( polygon_mode == GL_FILL )
+            glPolygonMode( GL_FRONT_AND_BACK, polygon_mode = GL_POINT );
         else
-            glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+            glPolygonMode( GL_FRONT_AND_BACK, polygon_mode = GL_LINE );
     }
 protected:
     override void prepare()
     {
+        glPointSize( 4.0 );
         glPolygonMode( GL_FRONT_AND_BACK, polygon_mode );
         timer = new Timer;
         material = new PhysMaterial( 0.5, 0.5, 0.5 );
@@ -116,7 +167,7 @@ protected:
         import std.math;
         addPlane( vec3( 0, 0, 0 ), 3*PI/2.0 );
 
-        //makeScales();
+        makeScales();
 
         connect( key, ( in KeyboardEvent ev )
         {  
@@ -128,6 +179,9 @@ protected:
             {
                 switch( ev.scan )
                 {
+                    case ev.Scan.P:
+                        SceneObject.switchPhongMode();
+                        break;
                     case ev.Scan.NUMBER_1:
                         addBox( vec3( x, y, z ), vec3( 0.5 ) );
                         break;
@@ -136,6 +190,9 @@ protected:
                         break;
                     case ev.Scan.NUMBER_3:
                         addCapsule( vec3( x, y, z ), 2, 0.5 );
+                        break;
+                    case ev.Scan.NUMBER_4:
+                        addDefaultModel( vec3( x, y, z ) );
                         break;
                     case ev.Scan.G:
                         phys_scene.gravity = -phys_scene.gravity;

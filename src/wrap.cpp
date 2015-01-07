@@ -19,7 +19,17 @@ void closeExtensions()
 { PxCloseExtensions(); }
 
 PxCooking* getDefaultCooking( PxFoundation* foundation )
-{ PxCreateCooking(PX_PHYSICS_VERSION, *foundation, PxCookingParams( PxTolerancesScale() )); }
+{ 
+    PxTolerancesScale scale = PxTolerancesScale();
+    PxCookingParams params( scale );
+    // disable mesh cleaning - perform mesh validation on development configurations
+    params.meshPreprocessParams |= PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH;
+    // disable edge precompute, edges are set for each triangle, slows contact generation
+    //params.meshPreprocessParams |= PxMeshPreprocessingFlag::eDISABLE_ACTIVE_EDGES_PRECOMPUTE;
+    // lower hierarchy for internal mesh
+    params.meshCookingHint = PxMeshCookingHint::eCOOKING_PERFORMANCE;
+    return PxCreateCooking( PX_PHYSICS_VERSION, *foundation, params ); 
+}
 
 PxScene* getScene( PxPhysics* physics )
 {
@@ -58,6 +68,49 @@ PxGeometry* getCapsuleGeometry( float half_height, float radius )
 PxGeometry* getSphereGeometry( float radius )
 { return new PxSphereGeometry( radius ); }
 
+PxGeometry* getConvexMeshGeometry( unsigned int pcount, unsigned int pstride, void* verts,
+                                   PxCooking* cooking, PxPhysics* physics )
+{
+    PxConvexMeshDesc convex_desc;
+
+    convex_desc.points.count = pcount;
+    convex_desc.points.stride = pstride;
+    convex_desc.points.data = verts;
+    convex_desc.flags = PxConvexFlag::eCOMPUTE_CONVEX | PxConvexFlag::eINFLATE_CONVEX;
+
+    PxDefaultMemoryOutputStream write_buffer;
+    PxConvexMeshCookingResult::Enum result;
+    bool status = cooking->cookConvexMesh(convex_desc, write_buffer, &result);
+    if(!status)
+        return NULL;
+    PxDefaultMemoryInputData read_buffer(write_buffer.getData(), write_buffer.getSize());
+    return new PxConvexMeshGeometry( physics->createConvexMesh(read_buffer) );
+}
+
+PxGeometry* getTriangleMeshGeometry( unsigned int pcount, unsigned int pstride, void* verts,
+                                     unsigned int tcount, unsigned int tstride, void* indices, 
+                                     PxCooking* cooking, PxPhysics* physics )
+{
+    PxTriangleMeshDesc mesh_desc;
+
+    mesh_desc.points.count = pcount;
+    mesh_desc.points.stride = pstride;
+    mesh_desc.points.data = verts;
+
+    mesh_desc.triangles.count = tcount;
+    mesh_desc.triangles.stride = tstride;
+    mesh_desc.triangles.data = indices;
+
+    PxDefaultMemoryOutputStream write_buffer;
+    bool status = cooking->cookTriangleMesh(mesh_desc, write_buffer);
+    if(!status)
+        return NULL;
+
+    PxDefaultMemoryInputData read_buffer(write_buffer.getData(), write_buffer.getSize());
+
+    return new PxTriangleMeshGeometry( physics->createTriangleMesh(read_buffer) );
+}
+
 void getSimplePose( PxActor* actor, float* data ) //TODO rework
 {
     PxShape* shp[1];
@@ -92,15 +145,21 @@ PxActor* addSimpleObject( PxScene* scene,
                          PxTransform* transform, 
                          PxGeometry* geometry,
                          PxMaterial* material, 
-                         bool isStatic )
+                         bool isStatic, bool isKinematic )
 {
     PxActor* actor;
     if( isStatic )
         actor = physics->createRigidStatic( *transform );
     else
+    {
         actor = physics->createRigidDynamic( *transform );
+        ((PxRigidDynamic*)(actor))->setRigidDynamicFlag(PxRigidDynamicFlag::eKINEMATIC, isKinematic);
+    }
 
-    ((PxRigidBody*)(actor))->createShape( *geometry, *material );
+    PxShape* shape = ((PxRigidBody*)(actor))->createShape( *geometry, *material );
+
+    if( isKinematic )
+        shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
 
     scene->addActor( *actor );
     return actor;

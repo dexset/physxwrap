@@ -26,11 +26,7 @@ public:
         uint[] indices = [ 0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1 ];
         index.setData( indices );
 
-        import std.random;
-        auto r = uniform( 0, 1.0 );
-        auto g = uniform( 0, 1.0 );
-        auto b = uniform( 0, 1.0 );
-        color = col4( r, g, b, 1 );
+        material.diffuse = randomColor();
     }
 
     override void draw( Scene scene )

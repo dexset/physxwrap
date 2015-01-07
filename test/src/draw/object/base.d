@@ -10,35 +10,54 @@ import draw.scene;
 
 import physxwrap;
 
+struct ObjectMaterial
+{
+    vec3 ambient = vec3( 0, 0, 0 );
+    vec3 diffuse = vec3( 1, 0, 0 );
+    vec3 specular = vec3( 1, 1, 1 );
+}
+
 class SceneObject : GLSimpleObject
 {
 protected:
     GLBuffer vert, index;
-    col4 color;
+    ObjectMaterial material;
 
-    col4 randomColor()
+    bool with_index;
+
+    static int phong_mode = 1;
+
+    col3 randomColor()
     {
         import std.random;
         auto r = uniform( 0, 1.0 );
         auto g = uniform( 0, 1.0 );
         auto b = uniform( 0, 1.0 );
-        return col4( r, g, b, 1 );
+        return col3( r, g, b );
     }
 
-    void baseDraw( Scene scene )
+    void baseDraw( Scene scene, DrawMode mode = DrawMode.TRIANGLE_STRIP )
     {
         actor.update();
         shader.setUniform!mat4( "all_camera_mat", scene.camera_matrix( actor ) );
         shader.setUniform!mat4( "transform_camera_mat", scene.camera_transform_matrix( actor ) );
         shader.setUniform!vec3( "light_pos_transformed", scene.light_transformed.xyz );
 
-        shader.setUniform!vec3( "camera_pos", scene.cam.pos );
+        shader.setUniform!vec3( "ambient", material.ambient );
+        shader.setUniform!vec3( "diffuse", material.diffuse );
+        shader.setUniform!vec3( "specular", material.specular );
 
-        shader.setUniform!col4( "base_color", color );
-        shader.setUniform!col4( "light_color", col4(1) );
+        shader.setUniform!vec3( "camera_pos", scene.cam.pos );
         shader.setUniform!int( "draw_norms", 0 );
 
-        drawElements( DrawMode.TRIANGLE_STRIP );
+        shader.setUniform!int( "mode", phong_mode );
+
+        shader.setUniform!int( "has_light", 1 );
+
+        if( with_index )
+            drawElements( mode );
+        else
+            drawArrays( mode );
     }
 
     void baseDrawWithPrimitiveRestart( Scene scene, uint restart_index )
@@ -51,20 +70,28 @@ protected:
 
 public:
     PhysActor actor;
-    this( PhysActor actor, string shader_file = "flat.glsl" )
+    this( PhysActor actor, bool with_index = true, string shader_file = "flat.glsl" )
     {
         this.actor = actor;
         import std.file;
-        super( new CommonShaderProgram( parseShaderSource( readText( appPath( "..", "data", "shaders", shader_file ) ) ) ) );
+
+        auto base_shaders = parseShaderSource( readText( appPath( "..", "data", "shaders", shader_file ) ) );
+        auto phong_frag_shader = parseShaderSource( readText( appPath( "..", "data", "shaders", "phong_frag.glsl" ) ) )[0];
+        super( new CommonShaderProgram( base_shaders ~ phong_frag_shader ) );
 
         vert = createArrayBuffer();
-        index = createIndexBuffer();
+        this.with_index = with_index;
+        if( with_index )
+            index = createIndexBuffer();
 
         setAttribPointer( vert, shader.getAttribLocation( "vert" ), 3, GLType.FLOAT );
     }
 
-    void setColor( col4 c )
-    { color = c; }
+    void setColor( col3 c )
+    { material.diffuse = c; }
+
+    static void switchPhongMode()
+    { phong_mode = phong_mode==1?2:1; }
 
     abstract void draw( Scene scene );
 }

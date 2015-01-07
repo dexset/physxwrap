@@ -68,12 +68,12 @@ private:
 public:
     this( float radius, uint segs, PhysActor actor )
     {
-        super( actor, "smooth.glsl" );
+        super( actor, true, "smooth.glsl" );
 
         prepareVertsAndNorms( radius, segs );
         prepareIndices( segs );
 
-        color = randomColor();
+        material.diffuse = randomColor();
     }
 
     override void draw( Scene scene )

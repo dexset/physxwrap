@@ -47,6 +47,12 @@ private
         PxGeometry getCapsuleGeometry( float, float );
         PxGeometry getSphereGeometry( float );
 
+        PxGeometry* getConvexMeshGeometry( uint pcount, uint pstride, void* verts,
+                                         PxCooking cooking, PxPhysics physics );
+        PxGeometry* getTriangleMeshGeometry( uint pcount, uint pstride, void* verts,
+                                         uint tcount, uint tstride, void* indices, 
+                                         PxCooking cooking, PxPhysics physics );
+
         void getSimplePose( PxActor, float* );
         void actorWakeUp( PxActor );
         void actorAddForce( PxActor, float*, PhysForceMode, bool );
@@ -55,7 +61,7 @@ private
         PxScene getScene( PxPhysics );
         void setGravity( PxScene, PxVec3 );
         PxVec3 getGravity( PxScene );
-        PxActor addSimpleObject( PxScene, PxPhysics, PxTransform, PxGeometry, PxMaterial, bool );
+        PxActor addSimpleObject( PxScene, PxPhysics, PxTransform, PxGeometry, PxMaterial, bool, bool );
         void removeSimpleObject( PxScene, PxActor );
 
         void simulate( PxScene, float dt );
@@ -161,6 +167,19 @@ public:
 
     static PhysGeometry sphereGeometry( float radius )
     { return new PhysGeometry( getSphereGeometry( radius ) ); }
+
+    static PhysGeometry convexMeshGeometry( vec3[] verts )
+    { 
+        return new PhysGeometry( getConvexMeshGeometry( cast(uint)verts.length, cast(uint)vec3.sizeof, cast(void*)verts.ptr,
+                                                          cooking.ptr, physics.ptr ) ); 
+    }
+
+    static PhysGeometry triangleMeshGeometry( vec3[] verts, uint[] indices )
+    { 
+        return new PhysGeometry( getTriangleMeshGeometry( cast(uint)verts.length, cast(uint)vec3.sizeof, cast(void*)verts.ptr,
+                                                          cast(uint)indices.length / 3, cast(uint)uint.sizeof*3, cast(void*)indices.ptr,
+                                                          cooking.ptr, physics.ptr ) ); 
+    }
 }
 
 class PhysActor : PhysBaseObject, SpaceNode
@@ -223,9 +242,9 @@ public:
         return vec3( rvec[0], rvec[1], rvec[2] ); 
     }
 
-    PhysActor createSimple( PhysTransform transform, PhysGeometry geometry, PhysMaterial material, bool is_static = false )
+    PhysActor createSimple( PhysTransform transform, PhysGeometry geometry, PhysMaterial material, bool is_static = false, bool is_kinematic = false )
     { 
-        auto actor_ptr = addSimpleObject( ptr, physics.ptr, transform.ptr, geometry.ptr, material.ptr, is_static ); 
+        auto actor_ptr = addSimpleObject( ptr, physics.ptr, transform.ptr, geometry.ptr, material.ptr, is_static, is_kinematic ); 
         return new PhysActor( actor_ptr, is_static );
     }
 

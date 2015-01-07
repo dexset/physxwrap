@@ -119,7 +119,7 @@ class Capsule : SceneObject
 public:
     this( float height, float radius, uint segs, PhysActor actor )
     {
-        super( actor, "smooth.glsl" );
+        super( actor, true, "smooth.glsl" );
 
         prepareNormBuffer();
 
@@ -151,7 +151,7 @@ public:
         norm.setData( norm_data );
         index.setData( index_data );
 
-        color = randomColor;
+        material.diffuse = randomColor;
     }
 
     override void draw( Scene scene )

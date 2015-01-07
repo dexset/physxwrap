@@ -29,6 +29,12 @@ extern "C"
     PxGeometry* getCapsuleGeometry( float, float );
     PxGeometry* getSphereGeometry( float );
 
+    PxGeometry* getConvexMeshGeometry( unsigned int pcount, unsigned int pstride, void* verts,
+                                     PxCooking* cooking, PxPhysics* physics );
+    PxGeometry* getTriangleMeshGeometry( unsigned int pcount, unsigned int pstride, void* verts,
+                                     unsigned int tcount, unsigned int tstride, void* indices, 
+                                     PxCooking* cooking, PxPhysics* physics );
+
     void actorWakeUp( PxActor* );
     void getSimplePose( PxActor*, float* );
     void actorAddForce( PxActor*, PxVec3*, PxForceMode::Enum, bool );
@@ -36,7 +42,7 @@ extern "C"
 
     void setGravity( PxScene*, PxVec3* );
     PxVec3* getGravity( PxScene* );
-    PxActor* addSimpleObject( PxScene*, PxPhysics*, PxTransform*, PxGeometry*, PxMaterial*, bool );
+    PxActor* addSimpleObject( PxScene*, PxPhysics*, PxTransform*, PxGeometry*, PxMaterial*, bool, bool );
     void removeSimpleObject( PxScene*, PxActor* );
 
     void simulate( PxScene*, float dt );
