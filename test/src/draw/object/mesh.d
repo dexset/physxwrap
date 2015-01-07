@@ -131,9 +131,6 @@ public:
 
         auto model = loadModel( appPath( "..", "data", "models", fname ) );
 
-        logger.error( model.verts.length );
-        logger.error( model.norms.length );
-
         vert.setData( model.verts );
         norm.setData( model.norms );
         

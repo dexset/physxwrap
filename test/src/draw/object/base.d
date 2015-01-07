@@ -41,7 +41,7 @@ protected:
         actor.update();
         shader.setUniform!mat4( "all_camera_mat", scene.camera_matrix( actor ) );
         shader.setUniform!mat4( "transform_camera_mat", scene.camera_transform_matrix( actor ) );
-        shader.setUniform!vec3( "light_pos_transformed", scene.light_transformed.xyz );
+        shader.setUniform!(Vector!(3, float, "x y z"))( "light_pos_transformed", scene.light_transformed.xyz );
 
         shader.setUniform!vec3( "ambient", material.ambient );
         shader.setUniform!vec3( "diffuse", material.diffuse );

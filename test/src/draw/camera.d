@@ -1,6 +1,6 @@
 module draw.camera;
 
-import des.view;
+import des.space;
 import std.math;
 
 import des.app.event;

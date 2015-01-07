@@ -1,6 +1,6 @@
 module physxwrap;
 import des.math.linear;
-import des.view;
+import des.space;
 import des.util.arch.emm;
 
 class PhysXException : Exception

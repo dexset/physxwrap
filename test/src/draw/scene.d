@@ -3,7 +3,7 @@ module draw.scene;
 import draw.camera;
 
 import des.math.linear;
-import des.view;
+import des.space;
 
 import des.util.logsys;
 
