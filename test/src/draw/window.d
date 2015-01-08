@@ -28,6 +28,8 @@ private:
 
     Timer timer;
 
+    TextBox info_text;
+
     auto polygon_mode = GL_FILL;
 
     SceneObject addBox( vec3 pos, vec3 size )
@@ -151,9 +153,34 @@ private:
         else
             glPolygonMode( GL_FRONT_AND_BACK, polygon_mode = GL_LINE );
     }
-protected:
-    override void prepare()
+
+    void prepareInfoText()
     {
+        import des.util.helpers;
+        import des.il;
+        auto font_name = appPath( "..", "data", "fonts", "default.ttf" );
+        info_text = newEMM!TextBox( font_name );
+        info_text.setRect( fRegion2( 10, 10, 1, 1 ) ); 
+        info_text.setColor( col4( 0.8, 0.8, 0.8, 1 ) );
+
+        info_text.text = 
+`1 - Box
+2 - Sphere
+3 - Capsule
+4 - model.des
+G - Gravity
+F - Force to center
+W - Polygon mode
+P - Blin-phong/phong shading
+N - Draw norms
+L - Lightning
+`;
+
+    }
+
+    void prepareScene()
+    {
+        glCullFace( GL_FRONT );
         glPointSize( 4.0 );
         glPolygonMode( GL_FRONT_AND_BACK, polygon_mode );
         timer = new Timer;
@@ -169,6 +196,12 @@ protected:
 
         makeScales();
 
+    }
+protected:
+    override void prepare()
+    {
+        prepareScene();
+        prepareInfoText();
         connect( key, ( in KeyboardEvent ev )
         {  
             import std.random;
@@ -181,6 +214,12 @@ protected:
                 {
                     case ev.Scan.P:
                         SceneObject.switchPhongMode();
+                        break;
+                    case ev.Scan.N:
+                        SceneObject.switchNormDrawing();
+                        break;
+                    case ev.Scan.L:
+                        SceneObject.switchLightning();
                         break;
                     case ev.Scan.NUMBER_1:
                         addBox( vec3( x, y, z ), vec3( 0.5 ) );
@@ -226,10 +265,19 @@ protected:
             glEnable( GL_DEPTH_TEST );
             foreach( ref d; objects )
                 d.draw(scene); 
+            glDisable( GL_DEPTH_TEST );
+            glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+            info_text.draw( size );
+            glPolygonMode( GL_FRONT_AND_BACK, polygon_mode );
         });
 
         connect( idle, 
         { 
+            if( timer.time <= 1.0 )
+            {
+                timer.cycle();
+                return;
+            }
             phys_scene.process( timer.cycle() );
         });
     }

@@ -57,14 +57,20 @@ void main()
         for( int i = 0; i < 3; i++ )
         {
             gl_Position = gl_in[i].gl_Position - 0.1;
+            pos_transformed = ex_pos_transformed[i];
+            norm_transformed = norm;
             is_norm_vec = 1;
             EmitVertex();
 
             gl_Position = gl_in[i].gl_Position + 0.1;
+            pos_transformed = ex_pos_transformed[i];
+            norm_transformed = norm;
             is_norm_vec = 1;
             EmitVertex();
 
             gl_Position = gl_in[i].gl_Position + vec4( drawable_norm, 0 );
+            pos_transformed = ex_pos_transformed[i];
+            norm_transformed = norm;
             is_norm_vec = 1;
             EmitVertex();
 

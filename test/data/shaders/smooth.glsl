@@ -49,14 +49,20 @@ void main()
         for( int i = 0; i < 3; i++ )
         {
             gl_Position = gl_in[i].gl_Position - 0.1;
+            pos_transformed = ex_pos_transformed[i];
+            norm_transformed = normalize( ( transform_camera_mat * vec4( ex_norm[i], 0 ) ).xyz );
             is_norm_vec = 1;
             EmitVertex();
 
             gl_Position = gl_in[i].gl_Position + 0.1;
+            pos_transformed = ex_pos_transformed[i];
+            norm_transformed = normalize( ( transform_camera_mat * vec4( ex_norm[i], 0 ) ).xyz );
             is_norm_vec = 1;
             EmitVertex();
 
             gl_Position = gl_in[i].gl_Position + normalize( ( all_camera_mat * vec4( ex_norm[i], 0 ) ) );
+            pos_transformed = ex_pos_transformed[i];
+            norm_transformed = normalize( ( transform_camera_mat * vec4( ex_norm[i], 0 ) ).xyz );
             is_norm_vec = 1;
             EmitVertex();
 

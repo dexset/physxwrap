@@ -26,6 +26,8 @@ protected:
     bool with_index;
 
     static int phong_mode = 1;
+    static int draw_norms = 0;
+    static int has_light = 1;
 
     col3 randomColor()
     {
@@ -41,18 +43,18 @@ protected:
         actor.update();
         shader.setUniform!mat4( "all_camera_mat", scene.camera_matrix( actor ) );
         shader.setUniform!mat4( "transform_camera_mat", scene.camera_transform_matrix( actor ) );
-        shader.setUniform!(Vector!(3, float, "x y z"))( "light_pos_transformed", scene.light_transformed.xyz );
+        shader.setUniform!(Vector!(3, float, "x y z"))( "light_pos_transformed", scene.light_transformed.xyz );//TODO not good
 
         shader.setUniform!vec3( "ambient", material.ambient );
         shader.setUniform!vec3( "diffuse", material.diffuse );
         shader.setUniform!vec3( "specular", material.specular );
 
         shader.setUniform!vec3( "camera_pos", scene.cam.pos );
-        shader.setUniform!int( "draw_norms", 0 );
+        shader.setUniform!int( "draw_norms", draw_norms );
 
         shader.setUniform!int( "mode", phong_mode );
 
-        shader.setUniform!int( "has_light", 1 );
+        shader.setUniform!int( "has_light", has_light );
 
         if( with_index )
             drawElements( mode );
@@ -92,6 +94,12 @@ public:
 
     static void switchPhongMode()
     { phong_mode = phong_mode==1?2:1; }
+
+    static void switchNormDrawing()
+    { draw_norms = draw_norms==1?0:1; }
+
+    static void switchLightning()
+    { has_light = has_light==1?0:1; }
 
     abstract void draw( Scene scene );
 }
