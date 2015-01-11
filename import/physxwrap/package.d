@@ -248,8 +248,6 @@ public:
         return new PhysActor( actor_ptr, is_static );
     }
 
-
-
     void removeSimple( PhysActor actor )
     { removeSimpleObject( ptr, actor.ptr ); }
 

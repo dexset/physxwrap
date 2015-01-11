@@ -54,9 +54,9 @@ void main()
             }
         }
 
-        color = vec4( ambient + lambertian * diffuse + specular_coef * specular, 1 );
+        color = vec4( ambient + lambertian * diffuse + specular_coef * specular, 1.0 );
     }
     else if( has_light == 0 )
-        color = vec4( diffuse, 1 );
+        color = vec4( diffuse, 1.0 );
 
 }

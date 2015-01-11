@@ -180,7 +180,8 @@ L - Lightning
 
     void prepareScene()
     {
-        glCullFace( GL_FRONT );
+        glEnable( GL_CULL_FACE );
+        glCullFace( GL_BACK );
         glPointSize( 4.0 );
         glPolygonMode( GL_FRONT_AND_BACK, polygon_mode );
         timer = new Timer;
