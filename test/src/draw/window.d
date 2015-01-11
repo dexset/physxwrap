@@ -5,13 +5,17 @@ import des.app;
 import des.gl;
 
 import des.util.logsys;
-
 import des.util.timer;
+import des.util.helpers;
+
+import des.il;
 
 import draw.object;
 import draw.scene;
 
 import physxwrap;
+
+import std.random;
 
 class MainWindow : GLWindow
 {
@@ -29,6 +33,7 @@ private:
     Timer timer;
 
     TextBox info_text;
+    TextBox fps_text;
 
     auto polygon_mode = GL_FILL;
 
@@ -40,7 +45,6 @@ private:
         auto actor = phys_scene.createSimple( transform, geometry, material );
 
         objects ~= newEMM!Box( size, actor );
-        import std.random;
         objects[$ - 1].actor.setDensity( uniform( 1.0, 10.0 ) );
         return objects[$ - 1];
     }
@@ -53,7 +57,6 @@ private:
         auto actor = phys_scene.createSimple( transform, geometry, material );
 
         objects ~= newEMM!Sphere( radius, 50, actor );
-        import std.random;
         objects[$ - 1].actor.setDensity( uniform( 1.0, 10.0 ) );
         return objects[$ - 1];
     }
@@ -107,7 +110,6 @@ private:
     {
         auto transform = new PhysTransform( pos );
 
-        import des.util.helpers;
         auto model = loadCollisionModel( appPath( "..", "data", "models", "model.des_collision" ) );
         auto geometry = PhysGeometry.convexMeshGeometry( model.verts );
 
@@ -127,7 +129,6 @@ private:
         auto actor = phys_scene.createSimple( transform, geometry, material );
 
         objects ~= newEMM!Capsule( height, radius, 50, actor );
-        import std.random;
         objects[$ - 1].actor.setDensity( uniform( 1.0, 10.0 ) );
         return objects[$ - 1];
     }
@@ -154,11 +155,8 @@ private:
             glPolygonMode( GL_FRONT_AND_BACK, polygon_mode = GL_LINE );
     }
 
-    void prepareInfoText()
+    void prepareInfoText( string font_name )
     {
-        import des.util.helpers;
-        import des.il;
-        auto font_name = appPath( "..", "data", "fonts", "default.ttf" );
         info_text = newEMM!TextBox( font_name );
         info_text.setRect( fRegion2( 10, 10, 1, 1 ) ); 
         info_text.setColor( col4( 0.8, 0.8, 0.8, 1 ) );
@@ -175,7 +173,13 @@ P - Blin-phong/phong shading
 N - Draw norms
 L - Lightning
 `;
+    }
 
+    void prepareFpsText( string font_name )
+    {
+        fps_text = newEMM!TextBox( font_name );
+        fps_text.setRect( fRegion2( size.x - 100, 10, 1, 1 ) ); 
+        fps_text.setColor( col4( 0.8, 0.8, 0.8, 1 ) );
     }
 
     void prepareScene()
@@ -197,15 +201,17 @@ L - Lightning
 
         makeScales();
 
+        auto font_name = appPath( "..", "data", "fonts", "default.ttf" );
+        prepareInfoText( font_name );
+        prepareFpsText( font_name );
     }
 protected:
     override void prepare()
     {
         prepareScene();
-        prepareInfoText();
+
         connect( key, ( in KeyboardEvent ev )
         {  
-            import std.random;
             float x = uniform( -20.0, 20.0 );
             float y = uniform( -20.0, 20.0 );
             float z = uniform( 1.0, 20.0 );
@@ -256,6 +262,9 @@ protected:
             scene.cam.keyControl( ev );
         });
 
+        connect( resized, ( ivec2 sz )
+        { fps_text.setRect( fRegion2( sz.x - 100, 10, 1, 1 ) ); });
+
         connect( mouse, (in MouseEvent ev)
         {  
            scene.cam.mouseControl( ev );
@@ -268,7 +277,10 @@ protected:
                 d.draw(scene); 
             glDisable( GL_DEPTH_TEST );
             glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+            glCullFace( GL_FRONT );
             info_text.draw( size );
+            fps_text.draw( size );
+            glCullFace( GL_BACK );
             glPolygonMode( GL_FRONT_AND_BACK, polygon_mode );
         });
 
@@ -279,7 +291,12 @@ protected:
                 timer.cycle();
                 return;
             }
-            phys_scene.process( timer.cycle() );
+
+            auto dt = timer.cycle();
+            phys_scene.process( dt );
+
+            import std.conv;
+            fps_text.text = to!wstring( 1 / dt );
         });
     }
 public:

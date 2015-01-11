@@ -25,7 +25,7 @@ protected:
 
     bool with_index;
 
-    static int phong_mode = 1;
+    static int phong_mode = 2;
     static int draw_norms = 0;
     static int has_light = 1;
 
@@ -43,7 +43,7 @@ protected:
         actor.update();
         shader.setUniform!mat4( "all_camera_mat", scene.camera_matrix( actor ) );
         shader.setUniform!mat4( "transform_camera_mat", scene.camera_transform_matrix( actor ) );
-        shader.setUniform!(Vector!(3, float, "x y z"))( "light_pos_transformed", scene.light_transformed.xyz );//TODO not good
+        shader.setUniform!vec3( "light_pos_transformed", vec3( scene.light_transformed.xyz ) );//TODO not good
 
         shader.setUniform!vec3( "ambient", material.ambient );
         shader.setUniform!vec3( "diffuse", material.diffuse );
