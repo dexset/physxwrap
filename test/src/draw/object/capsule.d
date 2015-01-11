@@ -46,8 +46,8 @@ class Capsule : SceneObject
             auto y = sin( a ) * radius;
             auto z = -height / 2.0;
             auto norm = vec3( 0, x, y ).e;
-            vert_data ~= VertData( vec3( z, x, y ), norm ); 
             vert_data ~= VertData( vec3( -z, x, y ), norm ); 
+            vert_data ~= VertData( vec3( z, x, y ), norm ); 
         }
         return vert_data;
     }
