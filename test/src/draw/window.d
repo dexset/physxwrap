@@ -194,7 +194,8 @@ L - Lightning
         phys_scene = newEMM!PhysScene;
         phys_scene.gravity = vec3( 0, 0, -9.8 );
 
-        scene = new Scene( vec3( 10, 10, 10 ) );
+        scene = new Scene( vec3( 20, 20, 10 ) );
+        scene.addLight( vec3( -20, -10, 10 ) );
 
         import std.math;
         addPlane( vec3( 0, 0, 0 ), 3*PI/2.0 );
