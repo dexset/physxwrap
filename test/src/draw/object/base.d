@@ -30,13 +30,13 @@ protected:
     static int draw_norms = 0;
     static int has_light = 1;
 
-    col3 randomColor()
+    vec3 randomColor()
     {
         import std.random;
         auto r = uniform( 0, 1.0 );
         auto g = uniform( 0, 1.0 );
         auto b = uniform( 0, 1.0 );
-        return col3( r, g, b );
+        return vec3( r, g, b );
     }
 
     void baseDraw( Scene scene, DrawMode mode = DrawMode.TRIANGLE_STRIP )
@@ -79,9 +79,9 @@ public:
         this.actor = actor;
         import std.file;
 
-        auto base_shaders = parseShaderSource( readText( appPath( "..", "data", "shaders", shader_file ) ) );
-        auto phong_frag_shader = parseShaderSource( readText( appPath( "..", "data", "shaders", "phong_frag.glsl" ) ) )[0];
-        super( new CommonShaderProgram( base_shaders ~ phong_frag_shader ) );
+        auto base_shaders = parseGLShaderSource( readText( appPath( "..", "data", "shaders", shader_file ) ) );
+        auto phong_frag_shader = parseGLShaderSource( readText( appPath( "..", "data", "shaders", "phong_frag.glsl" ) ) )[0];
+        super( new CommonGLShaderProgram( base_shaders ~ phong_frag_shader ) );
 
         vert = createArrayBuffer();
         this.with_index = with_index;
@@ -91,7 +91,7 @@ public:
         setAttribPointer( vert, shader.getAttribLocation( "vert" ), 3, GLType.FLOAT );
     }
 
-    void setColor( col3 c )
+    void setColor( vec3 c )
     { material.diffuse = c; }
 
     static void switchPhongMode()

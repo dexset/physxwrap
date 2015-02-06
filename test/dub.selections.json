@@ -1,0 +1,11 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"derelict-ft": "1.0.1",
+		"derelict-util": "1.9.1",
+		"derelict-assimp3": "1.0.0",
+		"derelict-sdl2": "1.9.1",
+		"derelict-il": "1.0.0",
+		"derelict-gl3": "1.0.12"
+	}
+}

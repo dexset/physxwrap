@@ -3,9 +3,9 @@ import des.app;
 
 void main()
 {
-    auto app = new GLApp;
+    auto app = new DesApp;
     app.addWindow({ return new MainWindow("test", ivec2(800, 600)); });
 
-    app.run();
+    while( app.step() ){}
     app.destroy();
 }

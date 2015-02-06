@@ -6,14 +6,14 @@
     "importPaths": [ "../import", "des/import", "../descore/import" ],
     "sourcePaths": [ "src", "des/import", "../descore/import", "../import" ],
 
-    "lflags": [ "-L../libs", "-L/home/akzwar/libs" ],
+    "lflags": [ "-L../lib", "-L/home/akzwar/lib64" ],
 
     "stringImportPaths": [ "data" ],
 
     "libs":
     [
-        "stdc++",
         "dphysx",
+        "stdc++",
         "GL",
         "CgGL",
         "Cg",
@@ -52,7 +52,7 @@
         "PxTask",
         "PxTaskCHECKED",
         "PxTaskDEBUG",
-        "PxTaskPROFILE"
+        "PxTaskPROFILE",
     ],
 
     "dependencies":
@@ -60,5 +60,7 @@
         "derelict-gl3": ">=1.0.10",
         "derelict-sdl2": ">=1.2.8",
         "derelict-ft": ">=1.0.0",
+        "derelict-assimp3": ">=1.0.0",
+        "derelict-il": ">=1.0.0"
     }
 }

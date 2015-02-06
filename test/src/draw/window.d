@@ -17,7 +17,7 @@ import physxwrap;
 
 import std.random;
 
-class MainWindow : GLWindow
+class MainWindow : DesWindow
 {
 private:
     SceneObject[] objects;
@@ -32,8 +32,8 @@ private:
 
     Timer timer;
 
-    TextBox info_text;
-    TextBox fps_text;
+    BaseMultiLineTextBox info_text;
+    BaseLineTextBox fps_text;
 
     auto polygon_mode = GL_FILL;
 
@@ -157,9 +157,9 @@ private:
 
     void prepareInfoText( string font_name )
     {
-        info_text = newEMM!TextBox( font_name );
-        info_text.setRect( fRegion2( 10, 10, 1, 1 ) ); 
-        info_text.setColor( col4( 0.8, 0.8, 0.8, 1 ) );
+        info_text = newEMM!BaseMultiLineTextBox( font_name );
+        info_text.position = vec2( 10, 10 ); 
+        info_text.color = vec3( 0.8, 0.8, 0.8 );
 
         info_text.text = 
 `1 - Box
@@ -177,13 +177,15 @@ L - Lightning
 
     void prepareFpsText( string font_name )
     {
-        fps_text = newEMM!TextBox( font_name );
-        fps_text.setRect( fRegion2( size.x - 100, 10, 1, 1 ) ); 
-        fps_text.setColor( col4( 0.8, 0.8, 0.8, 1 ) );
+        fps_text = newEMM!BaseLineTextBox( font_name );
+        fps_text.position = vec2( size.x - 100, 10 ); 
+        fps_text.color = vec3( 0.8, 0.8, 0.8 );
     }
 
     void prepareScene()
     {
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
         glEnable( GL_CULL_FACE );
         glCullFace( GL_BACK );
         glPointSize( 4.0 );
@@ -263,8 +265,8 @@ protected:
             scene.cam.keyControl( ev );
         });
 
-        connect( resized, ( ivec2 sz )
-        { fps_text.setRect( fRegion2( sz.x - 100, 10, 1, 1 ) ); });
+        connect( event.resized, ( ivec2 sz )
+        { fps_text.position = vec2( sz.x - 100, 10 ); });
 
         connect( mouse, (in MouseEvent ev)
         {  
